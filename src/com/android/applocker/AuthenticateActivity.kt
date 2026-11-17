@@ -100,6 +100,9 @@ class AuthenticateActivity : ComponentActivity() {
                 unlockAndFinish()
                 return@launch
             }
+            if (appLabel == packageName && packageName != null) {
+                appLabel = withContext(Dispatchers.IO) { resolveLabel(packageName!!) }
+            }
             securitySnapshot.value = snap
         }
 
@@ -253,6 +256,15 @@ class AuthenticateActivity : ComponentActivity() {
         }
     }
 
+    private fun resolveLabel(pkg: String): String {
+        return try {
+            val pm = packageManager
+            pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
+        } catch (e: Exception) {
+            pkg
+        }
+    }
+
     private fun buildResultData(): Intent = Intent().apply {
         putExtra(EXTRA_LOCKED_PACKAGE, packageName)
         putExtra(EXTRA_LOCKED_UID, userId)
@@ -315,8 +327,8 @@ class AuthenticateActivity : ComponentActivity() {
         const val ACTION_AUTHENTICATE = "com.android.applocker.action.AUTHENTICATE"
         const val ACTION_SYSTEM_UNLOCK = "com.android.applocker.action.SYSTEM_UNLOCK"
 
-        private const val EXIT_ANIMATION_MS = 300L
-        private const val UI_DEFER_MS = 400L
+        private const val EXIT_ANIMATION_MS = 80L
+        private const val UI_DEFER_MS = 0L
     }
 }
 
